@@ -8,8 +8,7 @@ import random
 import string
 import json
 
-from urlparse import urlparse, parse_qs
-from urllib import urlencode
+from urllib.parse import urlparse, parse_qs, urlencode
 
 from zanox import __version__
 
@@ -79,12 +78,12 @@ class PublisherApi(object):
         date = date.strftime(self.datetime_format)
         method = method.upper()
         elements = (method, uri, date, nonce)
-        signature = u''.join(elements)
+        signature = ''.join(elements)
 
         # Encode signature SHA256, and Base64
-        signature = hmac.new(self.secret_key, msg=signature, digestmod=hashlib.sha1).digest()
+        signature = hmac.new(self.secret_key.encode('utf-8'), msg=signature.encode('utf-8'), digestmod=hashlib.sha1).digest()
         signature = base64.b64encode(signature)
-        signature = '%s:%s' % (self.connect_id, signature)
+        signature = '%s:%s' % (self.connect_id, signature.decode())
         return signature
 
     def get_default_headers(self):
@@ -117,7 +116,7 @@ class PublisherApi(object):
         return page_numbers
 
     def pretty_print(self, json_object):
-        print json.dumps(json_object, indent=4, sort_keys=True)
+        print(json.dumps(json_object, indent=4, sort_keys=True))
 
     def get(self, resource, **parameters):
         url = self.construct_url(resource, **parameters)
@@ -140,7 +139,7 @@ class PublisherApi(object):
             deeplink_api_url = '{0}://toolbox.zanox.com/tools/api/deeplink?connectid={1}&adspaceid={2}&url={3}'.format(self.protocol, self.connect_id, adspace_id, destination_url)
             headers = self.get_default_headers()
             response = requests.get(deeplink_api_url, headers=headers)
-            print response.text
+            print(response.text)
             tracking_url = xmltodict.parse(response.text)['deeplink']['url']
         else:
             # Generate the link with the given trakcing url format
